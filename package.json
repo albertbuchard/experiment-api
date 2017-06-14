@@ -1,6 +1,6 @@
 {
   "name": "experiment-apis",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Backend APIs boilerplates for Experiment.js ",
   "main": "README.md",
   "scripts": {
