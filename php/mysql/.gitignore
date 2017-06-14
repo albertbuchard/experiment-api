@@ -2,4 +2,6 @@ vendor
 utilities/*dev.php
 utilities/*Dev.php
 utilities/surveys.php
+*dev.php
+*Dev.php
 hash.php
