@@ -16,5 +16,5 @@ Made with ❤️ by Albert Buchard
 
 From the **Bavelier Lab** in Geneva
 
-## Licence
-Apache-2 
+## License
+Apache-2
