@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Experiment[js] Api Login</title>
+  <script src="../node_modules/jquery/dist/jquery.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+  <script src="../node_modules/experiment-mathjs/dist/math.js"></script>
+  <!-- <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script> -->
+  <!-- <script src="http://cdn.jsdelivr.net/bluebird/3.4.7/bluebird.js"></script> -->
+  <script src="../node_modules/lodash/lodash.js"></script>
+  <script src="../node_modules/chartjs/chart.js"></script>
+  <script src="../node_modules/experiment-babylon-js/lib/babylon.max.js"></script>
+  <script src="../node_modules/experiment-boxes/lib/experimentBoxes.max.js" charset="utf-8"></script>
+  <script src="../node_modules/experiment-js/lib/experiment.max.js" charset="utf-8"></script>
+  <style>
+  html, body {
+    /*overflow: hidden;*/
+    width   : 100%;
+    height  : 100%;
+    margin  : 0;
+    padding : 0;
+  }
+
+  .task-canvas {
+    width   : 100%;
+    height  : 100%;
+    touch-action: none;
+  }
+
+  body {
+    background: black;
+  }
+  </style>
+  <script>
+    /* global TaskObject BABYLON ParamBox delay _ fadeout DEBUG_MODE_ON */
+    DEBUG_MODE_ON = false
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const taskObject = new TaskObject(document.getElementsByClassName('task-canvas'))
+      window.taskObject = taskObject
+      const tempMaxNumberOfRetry = taskObject.dataManager.MAX_NUMBER_OF_RETRY
+      const endpoint = './php/mysql/index.php'
+
+      const loggedInDeferred = new Deferred()
+
+      /**
+       * This function in a form generator that is called automatically by the DataManager when the user needs to login
+       * @method loginForm
+       * @return {SmartForm}  a SmartForm
+       */
+      function loginForm () {
+        var fields = {
+           userId: {
+             type: 'input',
+             constraints: 'alpha; length:10,300', // list of constraints that will be automatically verified: mandatory; alpha; numeric; length:XX; contains:a,b,@,.;
+             authorizedValues: null, // athorized values
+             parent: null,
+             title: 'Enter your login:'
+           },
+           password: {
+             type: 'password', //field type: input, select, textaera, slider, radio, password
+             constraints: 'length:6,300; score: 50', // list of constraints that will be automatically verified: mandatory; alpha; numeric; length:XX; contains:a,b,@,.;
+             authorizedValues: null, // athorized values
+             parent: null,
+             title: 'Enter your password, if you are new here you are free to pick one !' // you can control auto-create account in the php api config
+           },
+         }
+        var options = {fields, title: 'Login Form', format: 'topCentralSmall', callback: function (fields) { console.log({endpoint, credentials: {userId: fields.userId.value, password: fields.password.value}}) }}
+        const form = new SmartForm(options)
+        form.buttonText = 'OK'
+        return form
+      }
+
+      //  If you do not want to store the credentials for the connections localy set this variable to false (the password is not stored in any case, only a logging key)
+      taskObject.dataManager.useLocalStorageCredentials = false
+      taskObject.setConnection({ endpoint: './php/mysql/index.php', signInForm: loginForm}) // credentials: { userId: 'John', password: 'wrong' } })
+      .then(function (connection) {
+        if (connection.loggedIn) {
+          return loggedInDeferred.resolve()
+        }
+        return taskObject.dataManager.login(connection, null, loggedInDeferred) // forces a login
+      })
+      .then(function () {
+        // reset the retry limit to its original value
+        taskObject.dataManager.MAX_NUMBER_OF_RETRY = tempMaxNumberOfRetry
+
+        // start drawing the scene
+        return taskObject.startTask()
+      }).then(function (message) {
+        console.log(message)
+      })
+
+    })
+    </script>
+</head>
+<body>
+  <!-- Create a canvas for the task -->
+  <canvas class="task-canvas">
+    <p>
+      Your browser does not support the canvas element and will not be able to render the task.
+    </p>
+    <p>
+      Please install Google Chrome to continue: https://www.google.com/chrome
+    </p>
+  </canvas>
+</body>
+</html>
